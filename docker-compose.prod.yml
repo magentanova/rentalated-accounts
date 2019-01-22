@@ -1,0 +1,12 @@
+version: '3'
+services:
+  flask:
+    image: richardsjustind/rentalated-accounts
+    ports:
+      - "80:80"
+    # logging:
+    #   driver: awslogs
+    #   options: 
+    #     awslogs-group: rentalated-accounts
+    #     awslogs-region: us-east-2
+    #     awslogs-stream-prefix: rentalated-accounts-flask

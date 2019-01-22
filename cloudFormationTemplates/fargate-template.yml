@@ -1,0 +1,147 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Parameters:
+  Image: 
+    Type: String
+    Description: The image you want to use for your Fargate task definition.
+Resources:
+  # logging
+  CloudwatchLogsGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Join ['-', [FargateLogGroup, !Ref 'AWS::StackName']]
+      RetentionInDays: 14
+  # iam roles
+  ExecutionRole: 
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: RentalatedAccountsServiceExecutionRole
+      AssumeRolePolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ecs-tasks.amazonaws.com
+            Action: 'sts:AssumeRole'
+      ManagedPolicyArns:
+        - 'arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy'
+  # networking
+  FargateSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: ECS Security Group
+      VpcId: 
+        Fn::ImportValue: !Sub "${AWS::StackName}-network-VPCID"
+  FargateSecurityGroupHTTPinbound:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId: !Ref 'FargateSecurityGroup'
+      IpProtocol: tcp
+      FromPort: '80'
+      ToPort: '80'
+      CidrIp: 0.0.0.0/0
+  FargateSecurityGroupSSHinbound:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      GroupId: !Ref 'FargateSecurityGroup'
+      IpProtocol: tcp
+      FromPort: '22'
+      ToPort: '22'
+      CidrIp: 0.0.0.0/0
+  # compute
+  FargateCluster:
+    Type: AWS::ECS::Cluster
+  FargateTaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      RequiresCompatibilities: 
+        - FARGATE
+      Family: !Join ['', [!Ref 'AWS::StackName', '_task-accounts']]
+      Cpu: "256"
+      Memory: "0.5GB"
+      ExecutionRoleArn: !Ref ExecutionRole
+      NetworkMode: awsvpc
+      ContainerDefinitions:
+        - Name: !Sub "${AWS::StackName}-container"
+          Image: !Ref Image
+          PortMappings:
+            - ContainerPort: '80'
+  FargateService:
+    Type: AWS::ECS::Service
+    DependsOn: ALBListener
+    Properties:
+      Cluster: !Ref FargateCluster
+      LaunchType: FARGATE
+      DesiredCount: 2
+      TaskDefinition: !Ref FargateTaskDefinition
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: ENABLED
+          Subnets: 
+            - Fn::ImportValue: !Sub "${AWS::StackName}-network-SubnetA"
+            - Fn::ImportValue: !Sub "${AWS::StackName}-network-SubnetB"
+          SecurityGroups: 
+            - !Ref FargateSecurityGroup
+      LoadBalancers: 
+        - ContainerName: !Sub "${AWS::StackName}-container"
+          ContainerPort: '80'
+          TargetGroupArn: !Ref TargetGroup
+  # load balancer
+  ALB:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Name: RentalatedAccountsLoadBalancer
+      Scheme: internet-facing
+      LoadBalancerAttributes:
+        - Key: idle_timeout.timeout_seconds
+          Value: '30'
+      Subnets: 
+        - Fn::ImportValue: !Sub "${AWS::StackName}-network-SubnetA"
+        - Fn::ImportValue: !Sub "${AWS::StackName}-network-SubnetB"
+      SecurityGroups: [!Ref FargateSecurityGroup]
+  ALBListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      DefaultActions:
+      - Type: forward
+        TargetGroupArn: !Ref TargetGroup
+      LoadBalancerArn: !Ref ALB
+      Port: '80'
+      Protocol: HTTP
+  ALBListenerRule:
+    Type: AWS::ElasticLoadBalancingV2::ListenerRule
+    DependsOn: ALBListener
+    Properties:
+      Actions:
+      - Type: forward
+        TargetGroupArn: !Ref TargetGroup
+      Conditions:
+      - Field: path-pattern
+        Values: [/]
+      ListenerArn: !Ref ALBListener
+      Priority: 1
+  TargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    DependsOn: ALB
+    Properties:
+      HealthCheckIntervalSeconds: 10
+      HealthCheckPath: /
+      HealthCheckProtocol: HTTP
+      HealthCheckTimeoutSeconds: 5
+      HealthyThresholdCount: 2
+      Port: 80
+      Protocol: HTTP
+      TargetType: ip
+      UnhealthyThresholdCount: 2
+      VpcId: 
+        Fn::ImportValue: !Sub "${AWS::StackName}-network-VPCID"
+      
+Outputs:
+  FargateService:
+    Value: !Ref 'FargateService'
+  FargateCluster:
+    Value: !Ref 'FargateCluster'
+  FargateTaskDefinition:
+    Value: !Ref 'FargateTaskDefinition'
+
+
+
+

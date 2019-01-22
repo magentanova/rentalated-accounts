@@ -1,0 +1,7 @@
+
+# virtual env
+src/.venv
+
+# compiled/cached modules
+**/__pycache__
+**/*.pyc

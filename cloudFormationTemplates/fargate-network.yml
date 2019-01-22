@@ -1,0 +1,61 @@
+Resources:
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+  InternetGatewayAttachment:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId: !Ref VPC
+      InternetGatewayId: !Ref InternetGateway
+  VPC: 
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 172.30.0.0/16
+      EnableDnsSupport: True
+      EnableDnsHostnames: True
+  SubnetA: 
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: us-east-2a
+      MapPublicIpOnLaunch: True
+      VpcId: !Ref VPC 
+      CidrBlock: 172.30.0.0/20
+  SubnetB: 
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: us-east-2b
+      MapPublicIpOnLaunch: True
+      VpcId: !Ref VPC 
+      CidrBlock: 172.30.32.0/20
+  RouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+  InternetRoute:
+    Type: AWS::EC2::Route
+    DependsOn: InternetGatewayAttachment
+    Properties:
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref InternetGateway
+      RouteTableId: !Ref RouteTable
+  SubnetARouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref RouteTable
+      SubnetId: !Ref SubnetA
+Outputs: 
+  VPC: 
+    Description: A reference to the created VPC
+    Value: !Ref VPC
+    Export: 
+      Name: !Sub "${AWS::StackName}-VPCID"
+  SubnetA: 
+    Description: Our favorite subnet. 
+    Value: !Ref SubnetA
+    Export: 
+      Name: !Sub "${AWS::StackName}-SubnetA"
+  SubnetB: 
+    Description: A lesser subnet. 
+    Value: !Ref SubnetB
+    Export: 
+      Name: !Sub "${AWS::StackName}-SubnetB"
+
