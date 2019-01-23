@@ -1,0 +1,39 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: "The Dynamo DB instance for Rentalated account management."
+Resources: 
+  UserTable: 
+    Type: AWS::DynamoDB::Table
+    Properties: 
+      AttributeDefinitions: 
+        - 
+          AttributeName: Email
+          AttributeType: S
+      KeySchema: 
+        - 
+          AttributeName: Email
+          KeyType: HASH
+      ProvisionedThroughput: 
+        ReadCapacityUnits: 1
+        WriteCapacityUnits: 1
+      Tags:
+        - Key: Version
+          Value: 1
+  RevokedTokensTable:
+    Type: AWS::DynamoDB::Table
+    Properties: 
+      AttributeDefinitions: 
+        - 
+          AttributeName: AccessToken
+          AttributeType: S
+      KeySchema: 
+        - 
+          AttributeName: AccessToken
+          KeyType: HASH
+      ProvisionedThroughput: 
+        ReadCapacityUnits: 1
+        WriteCapacityUnits: 1
+Outputs:
+  UserTable: 
+    Value: !Ref UserTable
+  RevokedTokensTable:
+    Value: !Ref RevokedTokensTable
