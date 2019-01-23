@@ -6,7 +6,7 @@ from pynamodb.attributes import UnicodeAttribute, UTCDateTimeAttribute
 from werkzeug.security import generate_password_hash, check_password_hash
 
 from app.models.revokedToken import RevokedToken
-from config import USER_TABLE
+from app.config import USER_TABLE
 
 JWT_SECRET = os.environ["JWT_SECRET"]
 
@@ -18,10 +18,10 @@ class UserModel(Model):
         table_name = USER_TABLE
         region = "us-east-2"
     Email = UnicodeAttribute(hash_key=True)
-    First_name = UnicodeAttribute()
-    Last_name = UnicodeAttribute()
+    FirstName = UnicodeAttribute()
+    LastName = UnicodeAttribute()
     PasswordHash = UnicodeAttribute()
-    Created_at = UTCDateTimeAttribute()
+    CreatedAt = UTCDateTimeAttribute()
 
     def checkPassword(self,password):
         return check_password_hash(self.PasswordHash, password)

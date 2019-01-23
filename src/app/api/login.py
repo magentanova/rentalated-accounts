@@ -1,7 +1,8 @@
 from flask import Blueprint, jsonify, request
 
-from models.user import UserModel
-from models.revokedToken import RevokedToken
+from app.utils import auth_guard
+from app.models.user import UserModel
+from app.models.revokedToken import RevokedToken
 
 login_api = Blueprint("login_api", __name__)
 
@@ -28,10 +29,9 @@ def login():
         return "Error logging in", 400
 
 @login_api.route("/api/logout", methods=["POST"])
+@auth_guard
 def logout():
     token = request.headers.get('Authorization').split()[1]
-    print(len(RevokedToken.Meta.table_name))
-    print(len("rentalated-accounts-db-RevokedTokensTable-11S1XIOZAKB2Y"))
     revoked_token = RevokedToken(token)
     revoked_token.save()
     return "User logged out."
