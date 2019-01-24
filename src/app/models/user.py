@@ -2,13 +2,12 @@ import os
 import jwt
 import datetime
 from pynamodb.models import Model
-from pynamodb.attributes import UnicodeAttribute, UTCDateTimeAttribute
+from pynamodb.attributes import BooleanAttribute, UnicodeAttribute, UTCDateTimeAttribute
 from werkzeug.security import generate_password_hash, check_password_hash
 
 from app.models.revokedToken import RevokedToken
-from app.config import USER_TABLE
+from app.config import USER_TABLE, SECRET_KEY
 
-JWT_SECRET = os.environ["JWT_SECRET"]
 
 class UserModel(Model):
     """
@@ -17,14 +16,15 @@ class UserModel(Model):
     class Meta:
         table_name = USER_TABLE
         region = "us-east-2"
-    Email = UnicodeAttribute(hash_key=True)
-    FirstName = UnicodeAttribute()
-    LastName = UnicodeAttribute()
-    PasswordHash = UnicodeAttribute()
-    CreatedAt = UTCDateTimeAttribute()
+    email = UnicodeAttribute(hash_key=True)
+    active = BooleanAttribute(default=False)
+    first_name = UnicodeAttribute()
+    last_name = UnicodeAttribute()
+    password_hash = UnicodeAttribute()
+    created_at = UTCDateTimeAttribute()
 
     def checkPassword(self,password):
-        return check_password_hash(self.PasswordHash, password)
+        return check_password_hash(self.password_hash, password)
 
     @staticmethod
     def decodeAuthToken(auth_token):
@@ -46,7 +46,7 @@ class UserModel(Model):
                     "error_message": None
                 }
         try:
-            payload = jwt.decode(auth_token, JWT_SECRET, algorithms=["HS256"])
+            payload = jwt.decode(auth_token, SECRET_KEY, algorithms=["HS256"])
             if RevokedToken.check(auth_token):
                 return errorResponse
             else:
@@ -64,14 +64,13 @@ class UserModel(Model):
         payload = {
             "exp": int((datetime.datetime.utcnow() + datetime.timedelta(days=1)).timestamp()),
             "iat": int(datetime.datetime.utcnow().timestamp()),
-            "sub": self.Email
+            "sub": self.email
         }
         encoded = jwt.encode(
             payload,
-            JWT_SECRET,
+            SECRET_KEY,
             algorithm="HS256"
         )
-        print(encoded)
         return encoded
         
     def serialize(self):
@@ -84,4 +83,5 @@ class UserModel(Model):
         return d
 
     def setPasswordHash(self,pw):
-        self.PasswordHash = generate_password_hash(pw,method="pbkdf2:sha256")
+        self.password_hash = generate_password_hash(pw,method="pbkdf2:sha256")
+        return self.password_hash

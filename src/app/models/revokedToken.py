@@ -7,7 +7,7 @@ class RevokedToken(Model):
     class Meta:
         table_name = REVOKED_TOKENS_TABLE
         region = "us-east-2"
-    AccessToken = UnicodeAttribute(hash_key=True)
+    accessToken = UnicodeAttribute(hash_key=True)
     @staticmethod
     def check(token):
         try:

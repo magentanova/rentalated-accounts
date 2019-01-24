@@ -10,16 +10,14 @@ login_api = Blueprint("login_api", __name__)
 def login():
     user_data = request.get_json()
 
-    validLogin = True # CURTIS: does this work in terms of timing attacks?
-    if not UserModel.count(user_data["email"]):
-        # no such user exists
-        validLogin = False
-
-    else: 
+    validLogin = False # CURTIS: does this work in terms of timing attacks?
+    # switch this to true iff they exist, their password checks out, 
+        # and their account is active.
+    if UserModel.count(user_data["email"]):
         user_instance = UserModel.get(user_data["email"])
-        if not user_instance.checkPassword(user_data['password']):
-            # bad password
-            validLogin = False
+        if user_instance.checkPassword(user_data['password']):
+            if user_instance.active: 
+                validLogin = True
     
     if validLogin: 
         user_instance = UserModel.get(user_data["email"])

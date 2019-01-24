@@ -1,8 +1,9 @@
 import datetime
 from flask import Blueprint, jsonify, request
+from itsdangerous import URLSafeTimedSerializer
 
 import app.config as config
-from app.utils import send_email
+from app.utils import decode_activation_token, encode_activation_token, send_email
 from app.models.user import UserModel
 
 registration_api = Blueprint("registration_api", __name__)
@@ -26,30 +27,43 @@ def register():
     # good to go
     user_instance = UserModel(
         user_data["email"], 
-        CreatedAt=datetime.datetime.utcnow(),
-        FirstName=user_data["first_name"], 
-        LastName=user_data["last_name"],
+        created_at=datetime.datetime.utcnow(),
+        first_name=user_data["first_name"], 
+        last_name=user_data["last_name"],
     )
     user_instance.setPasswordHash(user_data["password"])
-
     email_template = """
         <h1>Rentalated</h1>
-        <a href="{}/activate/hashofemailandtimestamp">
+        <a href="{url}/test/activate/{encoded_id}">
             <p>Click this link to activate your account!</p>
         </a>
-    """.format(config.WEBSITE_URL)
+    """.format(url=config.WEBSITE_URL, encoded_id=encode_activation_token(user_data["email"]))
 
     send_email(
         user_data["email"], 
-        "The time has come for you to confirm your Rentalated account.",
+        "The time has come for you to activate your Rentalated account.",
         email_template
-        )
-    # user_instance.save()
+    )
+    user_instance.save()
 
-    # publish to SNS topic
-    ## ???
-    ## ???
     return jsonify({
         "msg": "user saved && confimrmation email sent",
         "saved_user": user_instance.serialize()
     })
+
+@registration_api.route("/api/activate/<activation_token>", methods=["POST"])
+def activate(activation_token):
+    email = decode_activation_token(activation_token)
+    if email: 
+        user_instance = UserModel.get(email)
+        if user_instance.active:
+            return "account already activated", 400
+        user_instance.update(actions=[
+            UserModel.active.set(True)
+        ])
+        # publish to SNS topic
+        ## ???
+        ## ???
+        return jsonify(user_instance.serialize())
+    else: 
+        return "invalid activation token", 400

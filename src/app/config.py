@@ -3,9 +3,15 @@ import os
 # CURTIS: we could be a little more clever here and write the json output of 
     # `describe-stacks` to a file, then parse it here to get table names
     # instead of hardcoding them in. just creates more setup scripts. 
+
+    # ^^ actually this is now a todo
+    
 # db stuff
-USER_TABLE = "rentalated-accounts-db-UserTable-W0EC595B54X3"
-REVOKED_TOKENS_TABLE = "rentalated-accounts-db-RevokedTokensTable-11S1XIOZAKB2Y"
+USER_TABLE = "rentalated-accounts-db-UserTable-1U4BFK8R9EE8B"
+REVOKED_TOKENS_TABLE = "rentalated-accounts-db-RevokedTokensTable-1VIEA9RVNWJKG"
+
+# encoding secrets
+SECRET_KEY=os.environ["SECRET_KEY"]
 
 # mail settings
 MAIL_SERVER = 'smtp.googlemail.com'
@@ -22,3 +28,4 @@ MAIL_DEFAULT_SENDER = 'adrumandawire@gmail.com'
 
 # misc
 WEBSITE_URL = "http://localhost:5000"
+
