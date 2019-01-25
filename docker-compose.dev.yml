@@ -10,8 +10,9 @@ services:
       - PYTHONPATH=$PYTHONPATH:app/:.venv/lib/python3.7/site-packages
       - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
       - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
-      - JWT_SECRET=${JWT_SECRET}
+      - SECRET_KEY=${SECRET_KEY}
       - MAIL_PASSWORD=${MAIL_PASSWORD}
+      - ENVIRONMENT=${ENVIRONMENT}
     ports:
       - "5000:5000"
       - "465:465"

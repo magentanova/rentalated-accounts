@@ -24,14 +24,18 @@ def register():
         ]):
         return jsonify("You must provide an email, first_name, last_name, and password"), 400
     
-    # good to go
+    # good to go, let's get them registered
     user_instance = UserModel(
         user_data["email"], 
         created_at=datetime.datetime.utcnow(),
         first_name=user_data["first_name"], 
         last_name=user_data["last_name"],
     )
+
+    # hash the password
     user_instance.setPasswordHash(user_data["password"])
+
+    # compose and send activation email
     email_template = """
         <h1>Rentalated</h1>
         <a href="{url}/test/activate/{encoded_id}">
@@ -44,10 +48,12 @@ def register():
         "The time has come for you to activate your Rentalated account.",
         email_template
     )
+
+    # save the user with .activated=False
     user_instance.save()
 
     return jsonify({
-        "msg": "user saved && confimrmation email sent",
+        "msg": "user saved && activation email sent",
         "saved_user": user_instance.serialize()
     })
 
@@ -64,6 +70,9 @@ def activate(activation_token):
         # publish to SNS topic
         ## ???
         ## ???
+        ## CURTIS: i went ahead and set this up, i think i get it now, should be fine, 
+        ### just haven't done it yet. and hard to test it without starting work on the 
+        ### other services
         return jsonify(user_instance.serialize())
     else: 
         return "invalid activation token", 400

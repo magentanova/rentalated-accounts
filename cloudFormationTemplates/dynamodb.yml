@@ -6,11 +6,11 @@ Resources:
     Properties: 
       AttributeDefinitions: 
         - 
-          AttributeName: Email
+          AttributeName: email
           AttributeType: S
       KeySchema: 
         - 
-          AttributeName: Email
+          AttributeName: email
           KeyType: HASH
       ProvisionedThroughput: 
         ReadCapacityUnits: 1
@@ -23,11 +23,11 @@ Resources:
     Properties: 
       AttributeDefinitions: 
         - 
-          AttributeName: AccessToken
+          AttributeName: accessToken
           AttributeType: S
       KeySchema: 
         - 
-          AttributeName: AccessToken
+          AttributeName: accessToken
           KeyType: HASH
       ProvisionedThroughput: 
         ReadCapacityUnits: 1

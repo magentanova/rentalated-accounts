@@ -1,42 +1,31 @@
-from flask import request
+import json
+import requests
+from flask import request, jsonify
 from flask_mail import Message
 from itsdangerous import URLSafeTimedSerializer
 
 import app.config as config
-from app import app, mail
+from app import app, current_user, mail
 from app.models.user import UserModel
 
 def auth_guard(func):
-    # should be replaced with a call to a token validation service, 
-        # which performs the below
-    def protectedFunc(*args,**kwargs):
-        authHeader = request.headers.get('Authorization')
-        authToken = None
-        accepted = False
-        active = False
+    def protected_func(*args,**kwargs):
+        auth_header = request.headers.get('Authorization')
+        print(json.dumps(auth_header))
+        # send the header to the token service for validation
+        response = requests.post("{}/token_service".format(config.TOKEN_SERVICE_URL), 
+            json={
+                "auth_header": auth_header
+            })
+        if response.status_code != 200: 
+            return jsonify(response.text), response.status_code
+        else:
+            current_user["email"] = response.json()["payload"]
+            return func(*args,**kwargs)
 
-        # check for present & valid auth token 
-        if authHeader:
-            authToken = authHeader.split()[1]
-            if authToken: 
-                decoded = UserModel.decodeAuthToken(authToken)
-                if decoded["valid"]:
-                    accepted = True
-                    email = decoded["payload"]
-                    user_instance = UserModel.get(email)
-                    if user_instance.active:
-                        active = True
-
-        # if passed check, invoke wrapped function
-        if accepted: 
-            if active: 
-                return func(*args,**kwargs)
-            else: 
-                return "Unathorized request: User account not active", 401
-        # otherwise reject request
-        else: 
-            return "Unauthorized request: Missing or invalid auth token", 401
-    return protectedFunc
+    protected_func.__name__ = func.__name__ 
+    # ^^ fixes an error caused by wrapping multiple functions with the same decorator
+    return protected_func
 
 def encode_activation_token(email):
     serializer = URLSafeTimedSerializer(config.SECRET_KEY)
@@ -50,6 +39,7 @@ def decode_activation_token(token, expiration=3600):
             max_age=expiration
         )
     except Exception as e:
+        print(e)
         return False
     return email
 

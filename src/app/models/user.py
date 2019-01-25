@@ -24,38 +24,10 @@ class UserModel(Model):
     created_at = UTCDateTimeAttribute()
 
     def checkPassword(self,password):
-        return check_password_hash(self.password_hash, password)
+        return check_password_hash(self.password_hash, password)        
 
-    @staticmethod
-    def decodeAuthToken(auth_token):
-        """
-        Validates the auth token
-        :param auth_token:
-        :return: integer|string
-        """
-        # CURTIS: for security purposes, i purposely am not telling them whether 
-            # they had a nonsense, expired, or revoked tokens
-        errorResponse = {
-            "valid": False,
-            "payload": None,
-            "error_message": "Bad auth token."
-        }
-        successResponse = {
-                    "valid": True,
-                    "payload": None,
-                    "error_message": None
-                }
-        try:
-            payload = jwt.decode(auth_token, SECRET_KEY, algorithms=["HS256"])
-            if RevokedToken.check(auth_token):
-                return errorResponse
-            else:
-                successResponse["payload"] = payload["sub"]
-                return successResponse
-        except (jwt.ExpiredSignatureError,  jwt.InvalidTokenError):
-            return errorResponse
-        
-
+    ### vvv CURTIS: maybe this kind of thing should move to the token service. have 
+        ### some questions there. 
     def encodeAuthToken(self):
         """
         Generates the Auth Token

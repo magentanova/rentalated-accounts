@@ -5,7 +5,7 @@ import os
     # instead of hardcoding them in. just creates more setup scripts. 
 
     # ^^ actually this is now a todo
-    
+
 # db stuff
 USER_TABLE = "rentalated-accounts-db-UserTable-1U4BFK8R9EE8B"
 REVOKED_TOKENS_TABLE = "rentalated-accounts-db-RevokedTokensTable-1VIEA9RVNWJKG"
@@ -26,6 +26,13 @@ MAIL_PASSWORD = os.environ['MAIL_PASSWORD']
 # mail accounts
 MAIL_DEFAULT_SENDER = 'adrumandawire@gmail.com'
 
-# misc
-WEBSITE_URL = "http://localhost:5000"
+# domains for other services
+if os.environ["ENVIRONMENT"] == "production": 
+    WEBSITE_URL = "???"
+    TOKEN_SERVICE_URL = "https://fo82pqxd3j.execute-api.us-east-2.amazonaws.com/Prod/"
+
+else:
+    WEBSITE_URL = "http://localhost:5000" 
+    TOKEN_SERVICE_URL = "http://localhost:3000"
+
 

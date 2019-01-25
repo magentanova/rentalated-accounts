@@ -8,7 +8,8 @@ class RevokedToken(Model):
         table_name = REVOKED_TOKENS_TABLE
         region = "us-east-2"
     accessToken = UnicodeAttribute(hash_key=True)
-    @staticmethod
+    @staticmethod ### CURTIS: this is also something that for the moment 
+    ### has been moved to the token service.
     def check(token):
         try:
             RevokedToken.get(token)

@@ -32,6 +32,8 @@ def update_account():
         # delete old user 
 
         # PUBLISH to SNS feed
+        ## haven't done any of this yet. partly because i'm curious about some 
+            ## language in the requirements about user id/email
         pass
     else: 
         user_instance.update(attributes={

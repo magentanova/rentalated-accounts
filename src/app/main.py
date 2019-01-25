@@ -13,10 +13,6 @@ app.register_blueprint(registration_api)
 def hello():
     return "Welcome to the rentalated accounts api. Hamberders"
 
-# @app.route("/activate/<user_id>")
-# def activate(user_id):
-#     return "Some day you'll be able to activate your account!"
-
 @app.route("/test/activate/<user_id>")
 def activationPage(user_id):
     return send_file("test_activation.html")
