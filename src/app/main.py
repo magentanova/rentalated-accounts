@@ -1,4 +1,5 @@
 from flask import send_file
+from flask_cors import CORS
 
 from app import app
 from app.api.account import account_api
@@ -8,6 +9,8 @@ from app.api.login import login_api
 app.register_blueprint(account_api)
 app.register_blueprint(login_api)
 app.register_blueprint(registration_api)
+
+CORS(app)
 
 @app.route("/")
 def hello():

@@ -33,6 +33,6 @@ if os.environ["ENVIRONMENT"] == "production":
 
 else:
     WEBSITE_URL = "http://localhost:5000" 
-    TOKEN_SERVICE_URL = "http://localhost:3000"
+    TOKEN_SERVICE_URL = "https://fo82pqxd3j.execute-api.us-east-2.amazonaws.com/Prod/"
 
 
