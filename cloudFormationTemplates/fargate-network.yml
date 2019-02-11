@@ -9,7 +9,7 @@ Resources:
   VPC: 
     Type: AWS::EC2::VPC
     Properties:
-      CidrBlock: 172.30.0.0/16
+      CidrBlock: 172.30.0.0/24
       EnableDnsSupport: True
       EnableDnsHostnames: True
   SubnetA: 
@@ -18,14 +18,14 @@ Resources:
       AvailabilityZone: us-east-2a
       MapPublicIpOnLaunch: True
       VpcId: !Ref VPC 
-      CidrBlock: 172.30.0.0/20
+      CidrBlock: 172.30.0.0/25
   SubnetB: 
     Type: AWS::EC2::Subnet
     Properties:
       AvailabilityZone: us-east-2b
       MapPublicIpOnLaunch: True
       VpcId: !Ref VPC 
-      CidrBlock: 172.30.32.0/20
+      CidrBlock: 172.30.0.128/25
   RouteTable:
     Type: AWS::EC2::RouteTable
     Properties:
